@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎂 A Special Message For You</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: #0a0e27;
+            color: #fff;
+        }
+
+        /* ===== LOCK SCREEN ===== */
+        .lock-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a4e 40%, #0d1b3e 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .lock-screen::before {
+            content: '';
+            position: absolute;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(100,150,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: starDrift 30s linear infinite;
+        }
+
+        @keyframes starDrift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-40px, -40px); }
+        }
+
+        .lock-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: lockPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes lockPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(100,180,255,0.3)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 25px rgba(100,180,255,0.6)); }
+        }
+
+        .lock-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            color: #7ec8e3;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(126,200,227,0.3);
+        }
+
+        .lock-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 35px;
+        }
+
+        /* PIN Input */
+        .pin-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pin-dot {
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(126,200,227,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #7ec8e3;
+            transition: all 0.3s ease;
+        }
+
+        .pin-dot.filled {
+            background: rgba(126,200,227,0.15);
+            border-color: #7ec8e3;
+            box-shadow: 0 0 20px rgba(126,200,227,0.2);
+        }
+
+        .pin-dot.error {
+            border-color: #e74c3c;
+            animation: shake 0.5s ease;
+        }
+
+        .pin-dot.success {
+            border-color: #2ecc71;
+            background: rgba(46,204,113,0.15);
+            box-shadow: 0 0 20px rgba(46,204,113,0.3);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* Numpad */
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 280px;
+        }
+
+        .num-btn {
+            width: 75px;
+            height: 60px;
+            border-radius: 15px;
+            border: 1px solid rgba(126,200,227,0.2);
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .num-btn:hover, .num-btn:active {
+            background: rgba(126,200,227,0.15);
+            border-color: #7ec8e3;
+            transform: scale(0.95);
+        }
+
+        .num-btn.action {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .num-btn.action:hover {
+            color: #7ec8e3;
+        }
+
+        .pin-error-msg {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            height: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ===== MESSAGE SCREEN ===== */
+        .message-screen {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(180deg, #0a0e27 0%, #0d1b3e 30%, #1a2a5e 60%, #0d1b3e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-screen.active {
+            display: flex;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: heroFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .hero h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #7ec8e3, #a8d8ea, #7ec8e3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .hero .hero-sub {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 300;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            animation: scrollBounce 2s ease-in-out infinite;
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+
+        @keyframes scrollBounce {
+            0%, 100% { transform: translateY(0); opacity: 0.3; }
+            50% { transform: translateY(10px); opacity: 0.8; }
+        }
+
+        /* Letter Section */
+        .letter-section {
+            width: 100%;
+            padding: 40px 20px 60px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .letter {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(126,200,227,0.1);
+            border-radius: 25px;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #7ec8e3, #a8d8ea, #7ec8e3, #a8d8ea);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .letter .dear {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #7ec8e3;
+            margin-bottom: 25px;
+        }
+
+        .letter .body-text {
+            font-size: 0.95rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+        }
+
+        .letter .body-text p {
+            margin-bottom: 18px;
+        }
+
+        .letter .body-text .hl {
+            color: #7ec8e3;
+            font-weight: 500;
+        }
+
+        .letter .body-text .emoji-line {
+            text-align: center;
+            font-size: 1.3rem;
+            letter-spacing: 8px;
+            margin: 25px 0;
+        }
+
+        .letter .sign-off {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .letter .sign-off .love {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 5px;
+        }
+
+        .letter .sign-off .name {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2rem;
+            color: #7ec8e3;
+        }
+
+        .letter .sign-off .nick {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            font-style: italic;
+        }
+
+        /* PS Section */
+        .ps-section {
+            max-width: 500px;
+            width: 100%;
+            padding: 0 20px 40px;
+            margin: 0 auto;
+        }
+
+        .ps-card {
+            background: rgba(126,200,227,0.08);
+            border: 1px solid rgba(126,200,227,0.15);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .ps-card .ps-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 10px;
+        }
+
+        .ps-card .ps-text {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .msg-footer {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .msg-footer p {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.3rem;
+            color: rgba(126,200,227,0.3);
+        }
+
+        .msg-footer .year {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.15);
+            margin-top: 8px;
+        }
+
+        /* ===== CONFETTI ===== */
+        .confetti-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            top: -15px;
+            animation: confettiFall 4.5s ease-in forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* ===== FLOATING ELEMENTS ===== */
+        .floating-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 998;
+            overflow: hidden;
+        }
+
+        .floating-el {
+            position: absolute;
+            animation: floatUp 7s ease-in forwards;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(100vh) scale(0.5); }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.6; }
+            100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+        }
+
+        /* ===== GLOW ORBS (background decoration) ===== */
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-orb.orb1 {
+            width: 300px; height: 300px;
+            background: #7ec8e3;
+            top: 10%; left: -100px;
+            animation: orbFloat1 8s ease-in-out infinite;
+        }
+
+        .glow-orb.orb2 {
+            width: 250px; height: 250px;
+            background: #a8d8ea;
+            bottom: 20%; right: -80px;
+            animation: orbFloat2 10s ease-in-out infinite;
+        }
+
+        .glow-orb.orb3 {
+            width: 200px; height: 200px;
+            background: #5b9bd5;
+            top: 50%; left: 50%;
+            animation: orbFloat3 12s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 20px); }
+        }
+
+        @keyframes orbFloat2 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-25px, -30px); }
+        }
+
+        @keyframes orbFloat3 {
+            0%, 100% { transform: translate(-50%, -50%); }
+            50% { transform: translate(-40%, -60%); }
+        }
+
+        /* ===== SCROLL REVEAL ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2.5rem; }
+            .letter { padding: 30px 22px; }
+            .letter .body-text { font-size: 0.88rem; }
+            .pin-dot { width: 48px; height: 48px; font-size: 1.3rem; }
+            .num-btn { width: 65px; height: 55px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Glow orbs -->
+    <div class="glow-orb orb1"></div>
+    <div class="glow-orb orb2"></div>
+    <div class="glow-orb orb3"></div>
+
+    <!-- ===== LOCK SCREEN ===== -->
+    <section class="lock-screen" id="lockScreen">
+        <div class="lock-icon">🔒</div>
+        <h2 class="lock-title">A Secret Message</h2>
+        <p class="lock-subtitle">Enter the PIN to unlock 💙</p>
+
+        <div class="pin-container" id="pinContainer">
+            <div class="pin-dot" id="dot0"></div>
+            <div class="pin-dot" id="dot1"></div>
+            <div class="pin-dot" id="dot2"></div>
+            <div class="pin-dot" id="dot3"></div>
+        </div>
+
+        <div class="numpad">
+            <button class="num-btn" onclick="pressKey('1')">1</button>
+            <button class="num-btn" onclick="pressKey('2')">2</button>
+            <button class="num-btn" onclick="pressKey('3')">3</button>
+            <button class="num-btn" onclick="pressKey('4')">4</button>
+            <button class="num-btn" onclick="pressKey('5')">5</button>
+            <button class="num-btn" onclick="pressKey('6')">6</button>
+            <button class="num-btn" onclick="pressKey('7')">7</button>
+            <button class="num-btn" onclick="pressKey('8')">8</button>
+            <button class="num-btn" onclick="pressKey('9')">9</button>
+            <button class="num-btn action" onclick="clearPin()">Clear</button>
+            <button class="num-btn" onclick="pressKey('0')">0</button>
+            <button class="num-btn action" onclick="backspace()">⌫</button>
+        </div>
+
+        <p class="pin-error-msg" id="pinError">&nbsp;</p>
+    </section>
+
+    <!-- ===== MESSAGE SCREEN ===== -->
+    <section class="message-screen" id="messageScreen">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-emoji">🎂</div>
+            <h1>Happy Birthday, Diya!</h1>
+            <p class="hero-sub">November 22, 2026</p>
+            <div class="scroll-indicator">↓</div>
+        </div>
+
+        <!-- Letter -->
+        <div class="letter-section">
+            <div class="letter reveal">
+                <p class="dear">Dear Diya 💙</p>
+                <div class="body-text">
+                    <p>
+                        I know we've been fighting for so long that we probably forgot how it even started — and yes, maybe we both played a part in it. Honestly, I'm just so grateful that yesterday's conversation with Shrusti finally <span class="hl">cleared a deep misconception</span> I had — you know what I mean, just a little truth that shifted everything.
+                    </p>
+                    <p>
+                        It made me realize something important: <span class="hl">a few years from now, life will move forward</span> and you won't always be right here under the same roof with me. Thinking about that makes every petty argument feel so pointless.
+                    </p>
+
+                    <p class="emoji-line">💙 ✨ 💙</p>
+
+                    <p>
+                        I <span class="hl">promise you from today</span> that I'm going to try my best not to argue with you, never do anything that hurts you, stop being selfish, and <span class="hl">always put you first</span>.
+                    </p>
+                    <p>
+                        You know I'm not good at expressing my feelings out loud, so I'm trying this just to <span class="hl">see you smile today</span>. Thank you for being my sister, for understanding me, and for letting us start fresh.
+                    </p>
+                    <p>
+                        No matter what, <span class="hl">I love you endlessly</span> and will always have your back. Have the happiest birthday! 🎉
+                    </p>
+
+                    <p class="emoji-line">🎂 🎁 🎈 🎊 💖</p>
+
+                    <p>
+                        By the way... <em>how did you even find this card gesture?!</em> 😄
+                    </p>
+                </div>
+                <div class="sign-off">
+                    <p class="love">With all my love,</p>
+                    <p class="name">Shlok</p>
+                    <p class="nick">( your crime partner ❤️ )</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PS -->
+        <div class="ps-section reveal">
+            <div class="ps-card">
+                <p class="ps-label">P.S.</p>
+                <p class="ps-text">This message is preserved forever in that QR code — so anytime you need a reminder of how much you mean to me, just scan it again 💙</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="msg-footer reveal">
+            <p>Made with love, just for you</p>
+            <p class="year">🎂 22 November 2026 🎂</p>
+        </div>
+    </section>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+    <!-- Floating Container -->
+    <div class="floating-container" id="floatingContainer"></div>
+
+    <script>
+        // ============================================================
+        //  PIN CONFIGURATION
+        //  Change this PIN anytime — only you (admin) control it
+        // ============================================================
+        const CORRECT_PIN = "3333";
+
+        // ============================================================
+        //  PIN LOGIC
+        // ============================================================
+        let currentPin = "";
+        const dots = [
+            document.getElementById('dot0'),
+            document.getElementById('dot1'),
+            document.getElementById('dot2'),
+            document.getElementById('dot3')
+        ];
+        const pinError = document.getElementById('pinError');
+
+        function updateDots() {
+            dots.forEach((dot, i) => {
+                if (i < currentPin.length) {
+                    dot.classList.add('filled');
+                    dot.textContent = '●';
+                } else {
+                    dot.classList.remove('filled', 'error', 'success');
+                    dot.textContent = '';
+                }
+            });
+        }
+
+        function pressKey(num) {
+            if (currentPin.length >= 4) return;
+            currentPin += num;
+            updateDots();
+            pinError.innerHTML = '&nbsp;';
+
+            // Haptic feedback (mobile)
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            if (currentPin.length === 4) {
+                setTimeout(checkPin, 300);
+            }
+        }
+
+        function backspace() {
+            currentPin = currentPin.slice(0, -1);
+            updateDots();
+            pinError.innerHTML = '&nbsp;';
+        }
+
+        function clearPin() {
+            currentPin = "";
+            updateDots();
+            pinError.innerHTML = '&nbsp;';
+        }
+
+        function checkPin() {
+            if (currentPin === CORRECT_PIN) {
+                // Success!
+                dots.forEach(d => {
+                    d.classList.add('success');
+                    d.classList.remove('filled');
+                    d.textContent = '✓';
+                });
+
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+
+                setTimeout(() => {
+                    unlockMessage();
+                }, 600);
+            } else {
+                // Wrong PIN
+                dots.forEach(d => d.classList.add('error'));
+                pinError.textContent = "Wrong PIN — try again 💙";
+
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                setTimeout(() => {
+                    currentPin = "";
+                    updateDots();
+                }, 800);
+            }
+        }
+
+        // Also support physical keyboard
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('lockScreen').style.display === 'none') return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                pressKey(e.key);
+            } else if (e.key === 'Backspace') {
+                backspace();
+            } else if (e.key === 'Escape') {
+                clearPin();
+            }
+        });
+
+        // ============================================================
+        //  UNLOCK — REVEAL MESSAGE
+        // ============================================================
+        function unlockMessage() {
+            const lockScreen = document.getElementById('lockScreen');
+            const messageScreen = document.getElementById('messageScreen');
+
+            // Fade out lock screen
+            lockScreen.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            lockScreen.style.opacity = '0';
+            lockScreen.style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                lockScreen.style.display = 'none';
+                messageScreen.classList.add('active');
+
+                // Start effects
+                createConfetti();
+                startFloatingEmojis();
+
+                // Trigger scroll reveals
+                setTimeout(triggerReveals, 500);
+            }, 600);
+        }
+
+        // ============================================================
+        //  CONFETTI
+        // ============================================================
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#7ec8e3', '#a8d8ea', '#5b9bd5', '#3498db', '#fff', '#f39c12', '#e74c3c', '#2ecc71'];
+
+            for (let i = 0; i < 100; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.width = (6 + Math.random() * 8) + 'px';
+                piece.style.height = (6 + Math.random() * 12) + 'px';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                piece.style.animationDelay = Math.random() * 2.5 + 's';
+                piece.style.animationDuration = (3 + Math.random() * 3) + 's';
+                container.appendChild(piece);
+            }
+
+            setTimeout(() => { container.innerHTML = ''; }, 8000);
+        }
+
+        // ============================================================
+        //  FLOATING EMOJIS
+        // ============================================================
+        function startFloatingEmojis() {
+            const container = document.getElementById('floatingContainer');
+            const emojis = ['💙', '✨', '🎂', '🎉', '💫', '🌟', '🎁', '🎈', '💖', '🦋'];
+
+            const interval = setInterval(() => {
+                const el = document.createElement('div');
+                el.className = 'floating-el';
+                el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.fontSize = (16 + Math.random() * 18) + 'px';
+                el.style.animationDuration = (5 + Math.random() * 5) + 's';
+                container.appendChild(el);
+
+                setTimeout(() => el.remove(), 10000);
+            }, 1200);
+
+            // Stop after 60 seconds to save battery
+            setTimeout(() => clearInterval(interval), 60000);
+        }
+
+        // ============================================================
+        //  SCROLL REVEAL
+        // ============================================================
+        function triggerReveals() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+    </script>
+</body>
+</html>
